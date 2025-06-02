@@ -31,9 +31,16 @@ class UserResource extends Resource
                                                 ->required()
                                                 ->maxLength(255),
 
+                Forms\Components\select::make('role_id')
+                                        ->relationship('roles', 'name')
+                                        ->searchable()
+                                        ->preload()
+                                        ->required(),
+
                 Forms\Components\TextInput::make('password')
                                                 ->required()
-                                                ->maxLength(255),
+                                                ->maxLength(255)
+                                                ->required(fn($context) => $context === 'create')
 
             ]);
     }
@@ -44,12 +51,18 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),
+                Tables\Columns\TextColumn::make('roles.name')
+                        ->label('Role(s)')
+                        ->badge()
+                        ->separator(','),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn($record) => $record->email !== 'jaweedkhan@espirittech.com'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -73,4 +86,5 @@ class UserResource extends Resource
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
+
 }
